@@ -21,7 +21,9 @@ app.get('/api/sync-status', async (req, res) => {
 
 async function getSyncStatus() {
     return new Promise((resolve, reject) => {
-        const lhiScriptsRoot = process.env.LHI_SCRIPTS_ROOT || '/Users/patrickwatsonlhi/lhi_scripts';
+        const os = require('os');
+        const homeDir = os.homedir();
+        const lhiScriptsRoot = process.env.LHI_SCRIPTS_ROOT || path.join(homeDir, 'lhi_scripts');
         
         exec(`cd ${lhiScriptsRoot} && git status --porcelain && git branch --show-current && git log --oneline -5`, 
             (error, stdout, stderr) => {
