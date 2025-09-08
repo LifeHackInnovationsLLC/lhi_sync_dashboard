@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LHI Scripts Sync Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        
+        .header h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .header p {
+            color: #7f8c8d;
+            font-size: 1.1em;
+        }
+        
+        .sync-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .environment-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .environment-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .env-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .env-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 1.5em;
+            color: white;
+        }
+        
+        .env-info h3 {
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        
+        .env-info p {
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+        
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9em;
+            margin-bottom: 15px;
+        }
+        
+        .status-indicator::before {
+            content: '●';
+            margin-right: 8px;
+            font-size: 1.2em;
+        }
+        
+        .details-list {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        
+        .details-list h4 {
+            color: #495057;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .details-list ul {
+            list-style: none;
+        }
+        
+        .details-list li {
+            padding: 5px 0;
+            color: #6c757d;
+            font-size: 0.85em;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .details-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .manual-steps {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        .manual-steps h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .manual-steps h2::before {
+            content: '📋';
+            margin-right: 10px;
+        }
+        
+        .step {
+            background: #f8f9fa;
+            border-left: 4px solid #007bff;
+            padding: 15px 20px;
+            margin-bottom: 15px;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .step h3 {
+            color: #007bff;
+            margin-bottom: 8px;
+        }
+        
+        .step code {
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
+        }
+        
+        .refresh-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease;
+            margin: 20px auto;
+            display: block;
+        }
+        
+        .refresh-button:hover {
+            background: #0056b3;
+        }
+        
+        .loading {
+            text-align: center;
+            color: #7f8c8d;
+            font-style: italic;
+            padding: 40px;
+        }
+        
+        .timestamp {
+            text-align: center;
+            color: #6c757d;
+            font-size: 0.85em;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔄 LHI Scripts Sync Dashboard</h1>
+            <p>Real-time synchronization status across all environments</p>
+        </div>
+        
+        <div id="loading" class="loading">
+            Loading synchronization status...
+        </div>
+        
+        <div id="dashboard" style="display: none;">
+            <div class="sync-grid" id="environmentGrid">
+                <!-- Environment cards will be populated here -->
+            </div>
+            
+            <div class="manual-steps">
+                <h2>Manual Synchronization Steps</h2>
+                <div class="step">
+                    <h3>Step 1: Check Current Status</h3>
+                    <p>Run <code>git status</code> to see uncommitted changes</p>
+                    <p>Run <code>git branch</code> to confirm current branch</p>
+                </div>
+                <div class="step">
+                    <h3>Step 2: Commit Local Changes</h3>
+                    <p>If you have changes: <code>git add [files]</code> then <code>git commit -m "message"</code></p>
+                    <p>Keep commits focused and descriptive</p>
+                </div>
+                <div class="step">
+                    <h3>Step 3: Push to Remote</h3>
+                    <p>Push your branch: <code>git push origin [branch-name]</code></p>
+                    <p>This makes your changes available to other environments</p>
+                </div>
+                <div class="step">
+                    <h3>Step 4: Pull on Other Environments</h3>
+                    <p>SSH to other machines and run: <code>git pull origin [branch-name]</code></p>
+                    <p>For DigitalOcean: Be careful with production changes</p>
+                </div>
+            </div>
+        </div>
+        
+        <button class="refresh-button" onclick="loadStatus()">🔄 Refresh Status</button>
+        
+        <div class="timestamp" id="timestamp"></div>
+    </div>
+
+    <script>
+        async function loadStatus() {
+            const loading = document.getElementById('loading');
+            const dashboard = document.getElementById('dashboard');
+            
+            loading.style.display = 'block';
+            dashboard.style.display = 'none';
+            
+            try {
+                const response = await fetch('/api/sync-status');
+                const data = await response.json();
+                
+                displayEnvironmentStatus(data);
+                document.getElementById('timestamp').textContent = `Last updated: ${new Date(data.timestamp).toLocaleString()}`;
+                
+                loading.style.display = 'none';
+                dashboard.style.display = 'block';
+            } catch (error) {
+                loading.innerHTML = `<div style="color: #e74c3c;">Error loading status: ${error.message}</div>`;
+            }
+        }
+        
+        function displayEnvironmentStatus(data) {
+            const grid = document.getElementById('environmentGrid');
+            
+            const envConfig = {
+                'MAIN_MAC': { name: 'Main Mac (Development)', icon: '💻', bgColor: '#3498db' },
+                'MYBAMBU_MAC': { name: 'MyBambu Mac (Client)', icon: '🖥️', bgColor: '#9b59b6' },
+                'DIGITALOCEAN_LINUX': { name: 'DigitalOcean (Production)', icon: '🌊', bgColor: '#e67e22' },
+                'OTHER_MAC': { name: 'Unknown Mac', icon: '❓', bgColor: '#95a5a6' },
+                'OTHER_LINUX': { name: 'Unknown Linux', icon: '🐧', bgColor: '#95a5a6' },
+                'UNKNOWN': { name: 'Unknown Environment', icon: '❓', bgColor: '#95a5a6' }
+            };
+            
+            const env = envConfig[data.environment] || envConfig.UNKNOWN;
+            
+            grid.innerHTML = `
+                <div class="environment-card">
+                    <div class="env-header">
+                        <div class="env-icon" style="background-color: ${env.bgColor}">
+                            ${env.icon}
+                        </div>
+                        <div class="env-info">
+                            <h3>${env.name}</h3>
+                            <p>${data.hostname} (${data.username})</p>
+                        </div>
+                    </div>
+                    
+                    <div class="status-indicator" style="background-color: ${data.syncStatus.color}20; color: ${data.syncStatus.color}">
+                        ${data.syncStatus.status}: ${data.syncStatus.message}
+                    </div>
+                    
+                    <div class="details-list">
+                        <h4>Current State</h4>
+                        <ul>
+                            <li><strong>Branch:</strong> ${data.currentBranch}</li>
+                            <li><strong>Uncommitted Changes:</strong> ${data.uncommittedChanges}</li>
+                            <li><strong>Platform:</strong> ${data.platform}</li>
+                        </ul>
+                    </div>
+                    
+                    ${data.changedFiles.length > 0 ? `
+                        <div class="details-list">
+                            <h4>Changed Files</h4>
+                            <ul>
+                                ${data.changedFiles.slice(0, 5).map(file => `<li>${file}</li>`).join('')}
+                                ${data.changedFiles.length > 5 ? `<li>... and ${data.changedFiles.length - 5} more</li>` : ''}
+                            </ul>
+                        </div>
+                    ` : ''}
+                    
+                    <div class="details-list">
+                        <h4>Recent Commits</h4>
+                        <ul>
+                            ${data.recentCommits.map(commit => `<li>${commit}</li>`).join('')}
+                        </ul>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Load status on page load
+        loadStatus();
+        
+        // Auto-refresh every 30 seconds
+        setInterval(loadStatus, 30000);
+    </script>
+</body>
+</html>

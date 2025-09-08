@@ -1,0 +1,20 @@
+{
+  "name": "lhi_sync_dashboard",
+  "version": "1.0.0",
+  "formFactor": "lhi_node_modules",
+  "type": "utility",
+  "status": "active",
+  "description": "Multi-environment synchronization dashboard for LHI Scripts ecosystem",
+  "features": [
+    "Real-time sync status monitoring",
+    "Multi-environment tracking (Mac, Linux, MyBambu)",
+    "Submodule status tracking",
+    "Manual sync instructions",
+    "LHI UI Framework integration"
+  ],
+  "dependencies": {
+    "@lhi/ui-framework-foundation": "*",
+    "@lhi/ui-framework-branded": "*",
+    "express": "^4.18.2"
+  }
+}
