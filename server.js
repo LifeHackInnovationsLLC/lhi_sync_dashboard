@@ -4,7 +4,13 @@ const path = require('path');
 const fs = require('fs');
 
 const app = express();
-const PORT = 7001; // Using LHI port range
+// Port MUST come from environment (set by launch.sh from port_registry)
+// Single source of truth: PocketBase port_registry collection
+if (!process.env.PORT) {
+    console.error('Error: PORT environment variable not set. Use ./launch.sh to start this service.');
+    process.exit(1);
+}
+const PORT = process.env.PORT;
 
 app.use(express.static('public'));
 app.use(express.json());
